@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tarta 50 dias de racha — sopla en tu microfono para apagar las velas Pauli!</title>
+  <audio id="soploSound">
+  <source src="soplo.mp3" type="audio/mpeg">
+  <source src="soplo.ogg" type="audio/ogg">
+</audio>
+
+<audio id="yupiSound">
+  <source src="yupi.mp3" type="audio/mpeg">
+  <source src="yupi.ogg" type="audio/ogg">
+</audio>
+  <style>
+    .cake-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 40%;   
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+    :root{
+      --bg: #f6f7fb;
+      --cake: #f8caca;
+      --icing: #fff6ff;
+      --plate: #e5e7eb;
+      --candle: #ffd166;
+      --wick: #333;
+      --flame1: #ffb703;
+      --flame2: #fb8500;
+      --smoke: rgba(120,120,120,.7);
+      --accent: #a78bfa;
+      --text: #1f2937;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100svh;display:grid;place-items:center;background:radial-gradient(1000px 600px at 70% -10%, #e9d5ff22, transparent 60%), var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color:var(--text);
+    }
+    .wrap{display:grid;gap:1.25rem; place-items:center; padding:1.25rem}
+    h1{font-weight:800;letter-spacing:.2px;margin:0;font-size:clamp(1.1rem, 2vw + .6rem, 1.6rem)}
+    p{margin:.25rem 0 .5rem;opacity:.8;text-align:center}
+
+    .stage{
+      position:relative; width:min(540px, 92vw); aspect-ratio: 16/12; border-radius:24px; background: linear-gradient(#dbeafe 0 40%, #ffffff 40% 100%);
+      box-shadow: 0 20px 50px rgba(0,0,0,.08), inset 0 1px 0 #fff;
+      display:grid; place-items:end center; overflow:hidden;
+    }
+    .plate{ width:80%; height:22px; background:var(--plate); border-radius:1000px; box-shadow: inset 0 4px 10px rgba(0,0,0,.08); margin-bottom:18px}
+
+    .cake{ position:absolute; bottom:40px; left:50%; transform:translateX(-50%); width:62%; height:38%; background:var(--cake); border-radius:20px 20px 16px 16px; box-shadow: inset 0 -8px 0 #f3a3a3, 0 12px 30px rgba(0,0,0,.08)}
+    .cake:before{content:""; position:absolute; inset:-22px 0 auto; height:44px; background:var(--icing); border-radius:20px 20px 0 0; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05)}
+    .drips{ position:absolute; top:-4px; left:0; right:0; height:40px; background: repeating-linear-gradient(90deg, transparent 0 40px, #fff 40px 44px, transparent 44px 46px); filter: drop-shadow(0 3px 0 rgba(0,0,0,.05))}
+
+    .candles{ position:absolute; bottom: calc(38% + 44px); left:50%; transform:translateX(-50%); display:flex; align-items:flex-end; gap:22px}
+    .candle{ position:relative; width:36px; height:110px; background:var(--candle); border-radius:8px; box-shadow: inset 0 -6px 0 #e3b24b, 0 8px 20px rgba(0,0,0,.12)}
+    .candle .label{position:absolute; inset:auto 4px 8px; font-weight:900; font-size:30px; line-height:1; text-align:center; color:#7c3aed; text-shadow:0 1px 0 #fff}
+    .candle .wick{ position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:3px; height:16px; background:var(--wick); border-radius:2px}
+    .flame{ position:absolute; top:-36px; left:50%; width:22px; height:32px; transform:translateX(-50%); transform-origin:50% 90%;
+      background: radial-gradient(50% 60% at 50% 50%, var(--flame1), var(--flame2) 70%);
+      border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+      filter: drop-shadow(0 4px 6px rgba(251,133,0,.5));
+      animation: flicker .12s infinite alternate ease-in-out, sway 2s infinite ease-in-out;
+    }
+    .glow{ position:absolute; top:-56px; left:50%; transform:translateX(-50%); width:70px; height:70px; border-radius:50%; background: radial-gradient(circle, rgba(251,191,36,.35), transparent 60%); pointer-events:none; mix-blend:screen; animation:pulse 1.5s infinite ease-in-out}
+    @keyframes flicker{ from{ transform:translateX(-50%) scaleY(1)} to{ transform:translateX(-50%) scaleY(.92)} }
+    @keyframes sway{ 0%,100%{ margin-left:0 } 50%{ margin-left:2px } }
+    @keyframes pulse{ 0%,100%{ opacity:.7 } 50%{ opacity:.35 } }
+
+    /* Humo cuando se apagan */
+    .smoke{ position:absolute; top:-24px; left:50%; transform:translateX(-50%); width:8px; height:8px; border-radius:50%; background:var(--smoke); opacity:0; filter: blur(0.5px)}
+    .smoke.s1{ animation: smokeUp 1.6s ease-out forwards }
+    .smoke.s2{ animation: smokeUp 1.9s .07s ease-out forwards }
+    .smoke.s3{ animation: smokeUp 2.2s .14s ease-out forwards }
+    @keyframes smokeUp{ 0%{opacity:0; transform:translate(-50%, 0) scale(1)} 8%{opacity:.9} 100%{opacity:0; transform:translate(-50%, -120px) scale(2.2)} }
+
+    /* Estado apagado */
+    .blown .flame, .blown .glow{ display:none }
+    .blown .wick{ background:#555 }
+
+    .controls{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center }
+    button{ appearance:none; border:0; border-radius:999px; padding:.8rem 1.1rem; font-weight:700; cursor:pointer; background:linear-gradient(180deg, #c4b5fd, #a78bfa); color:white; box-shadow:0 10px 20px rgba(167,139,250,.3)}
+    button:disabled{ opacity:.6; cursor:not-allowed }
+    .status{ font-size:.9rem; opacity:.8 }
+
+    .footer{ font-size:.8rem; opacity:.65 }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎂 Tarta 50 dias de racha — sopla en tu microfono para apagar las velas Pauli!</h1>
+    <p class="status" id="status">Pulsa «Activar micrófono» y sopla cerca de tu mierda de micro para apagarlas. (espero que no sea el de los cascos porque tenemos un problema).</p>
+
+    <div class="stage" role="img" aria-label="Tarta de cumpleaños con dos velas que forman el número cincuenta">
+      <div class="plate"></div>
+
+      <div class="cake" aria-hidden="true">
+        <div class="drips"></div>
+        <img src="racha.png" alt="Logo de racha TikTok" class="cake-logo">
+      </div>
+
+      <div class="candles" id="candles">
+        <!-- Vela 5 -->
+        <div class="candle" aria-label="Vela con número 5">
+          <div class="wick"></div>
+          <div class="flame"></div>
+          <div class="glow"></div>
+          <div class="label">5</div>
+          <div class="smoke s1"></div>
+          <div class="smoke s2"></div>
+          <div class="smoke s3"></div>
+        </div>
+        <!-- Vela 0 -->
+        <div class="candle" aria-label="Vela con número 0">
+          <div class="wick"></div>
+          <div class="flame"></div>
+          <div class="glow"></div>
+          <div class="label">0</div>
+          <div class="smoke s1"></div>
+          <div class="smoke s2"></div>
+          <div class="smoke s3"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn">Activar micrófono</button>
+      <button id="resetBtn" disabled>Reencender velas</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const statusEl = document.getElementById('status');
+  const candlesEl = document.getElementById('candles');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let audioCtx, analyser, micStream, rafId, blown = false;
+
+  function setStatus(msg){ statusEl.textContent = msg; }
+
+  function rmsFromTimeDomain(analyser){
+    const buf = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(buf);
+    let sum = 0;
+    for(let i=0;i<buf.length;i++){
+      const v = (buf[i]-128)/128; // -1..1
+      sum += v*v;
+    }
+    return Math.sqrt(sum / buf.length);
+  }
+
+  function startAnalyzing(){
+    const fftSize = 2048;
+    analyser.fftSize = fftSize;
+    analyser.smoothingTimeConstant = 0.2;
+
+    const threshold = 0.14; // sensibilidad del soplido (0 a 1 aprox)
+    const holdMs = 120; // tiempo mínimo por encima del umbral
+    let overSince = 0;
+
+    function loop(ts){
+      const level = rmsFromTimeDomain(analyser);
+      if(level > threshold){
+        if(!overSince) overSince = ts;
+        if(ts - overSince > holdMs && !blown){
+          blowOut();
+        }
+      } else {
+        overSince = 0;
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  async function enableMic(){
+    try{
+      startBtn.disabled = true;
+      setStatus('Solicitando acceso al micrófono…');
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:true, noiseSuppression:true }, video:false });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(micStream);
+      analyser = audioCtx.createAnalyser();
+      source.connect(analyser);
+      startAnalyzing();
+      setStatus('Se detecta tu microfono de mierda (espero que no sea el de los cascos porque tenemos un problema). ¡Sopla fuerte para apagar las velas, puta warra!');
+    }catch(err){
+      console.error(err);
+      setStatus('No se pudo acceder al micrófono. Comprate ya unos cascos decentes tía, que ya has cobrao de Upper');
+      startBtn.disabled = false;
+    }
+  }
+
+  function stopMic(){
+    if(rafId) cancelAnimationFrame(rafId);
+    if(micStream){
+      micStream.getTracks().forEach(t=>t.stop());
+      micStream = null;
+    }
+    if(audioCtx){
+      audioCtx.close();
+      audioCtx = null;
+    }
+  }
+
+  function triggerSmoke(candle){
+    // reinicia animaciones de humo
+    candle.querySelectorAll('.smoke').forEach((s)=>{
+      s.style.animation = 'none';
+      // forzar reflow
+      void s.offsetWidth;
+      // re-aplicar animación solo si está en estado soplado
+      s.style.animation = '';
+      s.classList.add('s1');
+    });
+  }
+
+ function blowOut(){
+  blown = true;
+  candlesEl.classList.add('blown');
+  document.querySelectorAll('.candle').forEach(triggerSmoke);
+  setStatus('¡A por los 100 dias, VAMOS ME CAGO EN DIOS! 🎉');
+  stopMic();
+  resetBtn.disabled = false;
+
+  // Reproducir sonido de soplido
+  const soplo = document.getElementById('soploSound');
+  if(soplo){ soplo.currentTime = 0; soplo.play().catch(()=>{}); }
+
+  // Después de 1 segundo reproducir yupi
+  setTimeout(()=>{
+    const yupi = document.getElementById('yupiSound');
+    if(yupi){ yupi.currentTime = 0; yupi.play().catch(()=>{}); }
+  }, 2000);
+}
+
+  function relight(){
+    blown = false;
+    candlesEl.classList.remove('blown');
+    // Opcional: pequeña animación de reaparecer
+    document.querySelectorAll('.flame, .glow').forEach(el=>{
+      el.style.opacity = '0';
+      el.animate([{opacity:0},{opacity:1}],{duration:350, easing:'ease-out', fill:'forwards'});
+    });
+    resetBtn.disabled = true;
+    startBtn.disabled = false;
+    setStatus('Pulsa «Activar micrófono» y sopla para apagarla, puta.');
+  }
+
+  startBtn.addEventListener('click', enableMic);
+  resetBtn.addEventListener('click', relight);
+
+  // Accesibilidad: tecla "r" para reencender
+  window.addEventListener('keydown', (e)=>{
+    if(e.key.toLowerCase()==='r' && resetBtn.disabled===false){ relight(); }
+  });
+})();
+</script>
+</body>
+</html>
